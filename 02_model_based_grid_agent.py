@@ -1,48 +1,102 @@
-"""Practical 2: Model-based agent navigating a grid using internal state."""
-from collections import deque
-grid = [
-    [0, 0, 1, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [1, 0, 0, 0],
-]
-start, goal = (0, 0), (3, 3)
-# The agent stores a model of the world and its current position.
-internal_state = {
-    "position": start,
-    "obstacles": {(r, c) for r, row in enumerate(grid)
-                  for c, value in enumerate(row) if value == 1},
-    "goal": goal,
-}
+#Model-Based Intelligent Agent
 
-def find_route(state, rows, cols):
-    queue = deque([state["position"]])
-    parent = {state["position"]: None}
-    moves = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-    while queue:
-        current = queue.popleft()
-        if current == state["goal"]:
-            route = []
-            while current is not None:
-                route.append(current)
-                current = parent[current]
-            return route[::-1]
-        r, c = current
-        for dr, dc in moves:
-            nxt = (r + dr, c + dc)
-            nr, nc = nxt
-            if (0 <= nr < rows and 0 <= nc < cols
-                    and nxt not in state["obstacles"]
-                    and nxt not in parent):
-                parent[nxt] = current
-                queue.append(nxt)
+#1)Create the grid environment
+
+grid = [
+
+    ['S','.','#'],
+    ['.','#','.'],
+    ['.','.','G']
+
+    ]
+
+# Starting position
+start = (0,0)
+
+# Goal posititon
+goal = (2,2)
+
+#current position of robot
+position = start
+
+#internal memory
+visited = set()
+
+print("Starting Position:",position)
+print("Goal Position:",goal)
+
+# function to check valid movement
+
+def is_valid(position):
+
+    row,col = position
+
+    if row<0 or row>=3:
+        return False
+    elif col<0 or col>=3:
+        return False
+    elif grid[row][col] =='#':
+        return False
+    elif position in visited:
+        return False
+    else:
+        return True
+    
+# Possible movements
+
+moves = [
+    (1,0),  #down
+    (0,1),  #Right
+    (-1,0), #up
+    (0,-1)  #left
+    ]
+
+#calculate the next position
+
+def get_next_position(position,move):
+    row = position[0] + move[0]
+    col = position[1] + move[1]
+
+    return(row,col)
+
+def find_path(position):
+
+    visited.add(position)
+
+    if position == goal:
+        return[position]
+
+    for move in moves:
+
+        new_position = get_next_position(position,move)
+
+        if is_valid(new_position):
+
+            path = find_path(new_position)
+
+            if path:
+                return[position]+path
+
     return None
 
-route = find_route(internal_state, len(grid), len(grid[0]))
-if route:
-    for position in route:
-        internal_state["position"] = position
-        print("Agent position:", internal_state["position"])
-    print("Goal reached.")
+path = find_path(start)
+
+
+if path:
+
+    print("Path found:")
+
+    for position in path:
+        print(position)
+
 else:
-    print("No route exists.")
+    print("No path found")
+
+
+
+
+
+
+
+
+
